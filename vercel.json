@@ -1,0 +1,7 @@
+{
+  "buildCommand": "cd openplay-web && npm install && npm run build",
+  "outputDirectory": "openplay-web/dist",
+  "installCommand": "cd openplay-web && npm install",
+  "framework": "vite"
+}
+
