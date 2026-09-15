@@ -380,9 +380,9 @@ function App() {
 
         <form onSubmit={handleEntrySubmit} className="flex flex-col gap-3 text-sm">
           <div>
-            <label className={lbl}>Court Name</label>
+            <label className={lbl}>Record Name</label>
             <input
-              type="text" placeholder="e.g., Court A" required
+              type="text" placeholder="e.g., Open Play Session 1" required
               className={inp}
               value={entryForm.court_name}
               onChange={(e) => setEntryForm({ ...entryForm, court_name: e.target.value })}
