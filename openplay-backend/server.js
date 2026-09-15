@@ -7,7 +7,7 @@ const jwt = require('jsonwebtoken');
 const axios = require('axios');
 
 const corsOptions = {
-  origin: ['https://openplay-web-daryl16.vercel.app', 'http://localhost:5173', 'http://localhost:5174'],
+  origin: ['https://opfintracker.vercel.app', 'https://openplay-web-daryl16.vercel.app', 'http://localhost:5173', 'http://localhost:5174'],
   credentials: true
 };
 
@@ -107,17 +107,16 @@ const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // Handle preflight requests explicitly for Vercel
 app.options('/api/google-auth', (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', 'https://openplay-web-daryl16.vercel.app');
+  res.setHeader('Access-Control-Allow-Origin', 'https://opfintracker.vercel.app');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.status(204).send();
 });
 
 // Google SSO — verify JWT credential from <GoogleLogin />, upsert user, return JWT
 app.post('/api/google-auth', async (req, res) => {
   // Force CORS header on every response
-  res.setHeader('Access-Control-Allow-Origin', 'https://openplay-web-daryl16.vercel.app');
+  res.setHeader('Access-Control-Allow-Origin', 'https://opfintracker.vercel.app');
   res.setHeader('Content-Type', 'application/json');
   
   const { credential } = req.body;
