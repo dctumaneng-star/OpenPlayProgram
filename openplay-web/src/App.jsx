@@ -7,7 +7,7 @@ import {
 } from 'recharts';
 import './index.css';
 
-const API_URL = import.meta.env.VITE_API_URL;
+
 
 // ─── Theme Hook ────────────────────────────────────────────────────────────
 function useTheme() {
