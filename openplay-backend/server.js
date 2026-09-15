@@ -110,6 +110,7 @@ app.options('/api/google-auth', (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', 'https://openplay-web-daryl16.vercel.app');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.status(204).send();
 });
 
