@@ -8,7 +8,13 @@ const jwt = require('jsonwebtoken');
 const axios = require('axios');
 
 const corsOptions = {
-  origin: ['https://opfintracker.vercel.app', 'https://openplay-web-daryl16.vercel.app', 'http://localhost:5173', 'http://localhost:5174'],
+  origin: [
+    'https://thebottombaseline.vercel.app',
+    'https://opfintracker.vercel.app', 
+    'https://openplay-web-daryl16.vercel.app', 
+    'http://localhost:5173', 
+    'http://localhost:5174'
+  ],
   credentials: true
 };
 
