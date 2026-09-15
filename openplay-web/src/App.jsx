@@ -93,13 +93,13 @@ function App() {
     e.preventDefault();
     try {
       if (isLogin) {
-        const res = await axios.post(`${API_URL}/login`, {
+        const res = await axios.post(`${API_URL}/api/login`, {
           username: authForm.username,
           password: authForm.password,
         });
         saveAuth(res.data);
       } else {
-        await axios.post(`${API_URL}/signup`, authForm);
+        await axios.post(`${API_URL}/api/signup`, authForm);
         alert('Signup successful! Please login.');
         setIsLogin(true);
       }
@@ -112,7 +112,7 @@ function App() {
   const googleLogin = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
       try {
-        const res = await axios.post(`${API_URL}/google-auth`, {
+        const res = await axios.post(`${API_URL}/api/google-auth`, {
           access_token: tokenResponse.access_token,
         });
         saveAuth(res.data);
@@ -132,7 +132,7 @@ function App() {
 
   const fetchRecords = async () => {
     try {
-      const res = await axios.get(`${API_URL}/open-plays`, {
+      const res = await axios.get(`${API_URL}/api/open-plays`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setRecords(res.data);
@@ -144,7 +144,7 @@ function App() {
   const handleEntrySubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post(`${API_URL}/open-plays`, entryForm, {
+      await axios.post(`${API_URL}/api/open-plays`, entryForm, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setEntryForm({
@@ -160,7 +160,7 @@ function App() {
   const handleDelete = async (id) => {
     if (!confirm('Delete this record?')) return;
     try {
-      await axios.delete(`${API_URL}/open-plays/${id}`, {
+      await axios.delete(`${API_URL}/api/open-plays/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       fetchRecords();
