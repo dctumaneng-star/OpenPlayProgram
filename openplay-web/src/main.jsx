@@ -9,7 +9,6 @@ console.log('[OAuth] Using Client ID:', clientId);
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
     <GoogleOAuthProvider clientId={clientId}>
       <App />
     </GoogleOAuthProvider>
