@@ -7,7 +7,7 @@ import {
 } from 'recharts';
 import './index.css';
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = "https://opfintracker-backend.vercel.app";
 
 // ─── Theme Hook ────────────────────────────────────────────────────────────
 function useTheme() {
