@@ -1,48 +1,55 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const sqlite3 = require('sqlite3').verbose();
+const { Pool } = require('pg');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const { OAuth2Client } = require('google-auth-library');
+const axios = require('axios');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-const JWT_SECRET = 'your_super_secret_jwt_key';
+const JWT_SECRET = process.env.JWT_SECRET || 'your_super_secret_jwt_key';
 
-// Replace this with your actual Google Client ID later
-const GOOGLE_CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID';
-const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
-
-// Initialize Database
-const db = new sqlite3.Database('./openplay.db', (err) => {
-  if (err) console.error(err.message);
-  console.log('Connected to the SQLite database.');
+// Connect to Neon PostgreSQL using the URL from your .env file
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
 });
 
-db.serialize(() => {
-  db.run(`CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    email TEXT UNIQUE NOT NULL,
-    username TEXT UNIQUE NOT NULL,
-    password_hash TEXT NOT NULL
-  )`);
+// Initialize Database Tables in the Cloud
+const initDb = async () => {
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        email VARCHAR(255) UNIQUE NOT NULL,
+        username VARCHAR(100) UNIQUE NOT NULL,
+        password_hash TEXT NOT NULL
+      );
+    `);
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS open_plays (
+        id SERIAL PRIMARY KEY,
+        username VARCHAR(100),
+        court_name VARCHAR(100),
+        returning_players INTEGER,
+        new_players INTEGER,
+        court_fee_rev NUMERIC,
+        misc_rev NUMERIC,
+        base_cost NUMERIC,
+        losses NUMERIC
+      );
+    `);
+    console.log('✅ Connected to Neon PostgreSQL successfully.');
+  } catch (err) {
+    console.error('❌ Database connection error:', err.message);
+  }
+};
+initDb();
 
-  db.run(`CREATE TABLE IF NOT EXISTS open_plays (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT,
-    court_name TEXT,
-    returning_players INTEGER,
-    new_players INTEGER,
-    court_fee_rev REAL,
-    misc_rev REAL,
-    base_cost REAL,
-    losses REAL
-  )`);
-});
-
-// Auth Middleware
+// --- HELPER ---
 const authenticateToken = (req, res, next) => {
   const token = req.headers['authorization']?.split(' ')[1];
   if (!token) return res.sendStatus(401);
@@ -58,91 +65,114 @@ const authenticateToken = (req, res, next) => {
 app.post('/api/signup', async (req, res) => {
   const { email, username, password } = req.body;
   try {
-    const salt = await bcrypt.genSalt(10);
-    const hash = await bcrypt.hash(password, salt);
-    
-    db.run(`INSERT INTO users (email, username, password_hash) VALUES (?, ?, ?)`, 
-      [email, username, hash], 
-      function(err) {
-        if (err) return res.status(400).json({ error: "Username or Email already exists." });
-        res.json({ message: "User created successfully!" });
-    });
+    const hash = await bcrypt.hash(password, 10);
+    await pool.query(
+      `INSERT INTO users (email, username, password_hash) VALUES ($1, $2, $3)`,
+      [email, username, hash]
+    );
+    res.json({ message: 'User created!' });
   } catch (err) {
-    res.status(500).json({ error: "Server error" });
+    res.status(400).json({ error: 'Username or Email already exists.' });
   }
 });
 
-app.post('/api/login', (req, res) => {
+app.post('/api/login', async (req, res) => {
   const { username, password } = req.body;
-  db.get(`SELECT * FROM users WHERE username = ? OR email = ?`, [username, username], async (err, user) => {
-    if (err || !user) return res.status(400).json({ error: "Invalid credentials." });
-    
-    const validPass = await bcrypt.compare(password, user.password_hash);
-    if (!validPass) return res.status(400).json({ error: "Invalid credentials." });
-
+  try {
+    const result = await pool.query(
+      `SELECT * FROM users WHERE username = $1 OR email = $1`,
+      [username]
+    );
+    const user = result.rows[0];
+    if (!user || !(await bcrypt.compare(password, user.password_hash))) {
+      return res.status(400).json({ error: 'Invalid credentials.' });
+    }
     const token = jwt.sign({ username: user.username, email: user.email }, JWT_SECRET);
     res.json({ token, username: user.username });
-  });
-});
-
-// --- GOOGLE SSO ENDPOINT ---
-app.post('/api/google-login', async (req, res) => {
-  const { credential } = req.body;
-  try {
-    const ticket = await googleClient.verifyIdToken({
-      idToken: credential,
-      audience: GOOGLE_CLIENT_ID,
-    });
-    const payload = ticket.getPayload();
-    const email = payload.email;
-    const username = email.split('@')[0];
-
-    db.get(`SELECT * FROM users WHERE email = ?`, [email], async (err, user) => {
-      if (err) return res.status(500).json({ error: "Database error" });
-      
-      let finalUser = user;
-      if (!user) {
-        const dummyHash = await bcrypt.hash("GOOGLE_SSO_USER", 10);
-        await new Promise((resolve) => {
-          db.run(`INSERT INTO users (email, username, password_hash) VALUES (?, ?, ?)`, 
-            [email, username, dummyHash], function() { resolve(); });
-        });
-        finalUser = { username, email };
-      }
-
-      const token = jwt.sign({ username: finalUser.username, email: finalUser.email }, JWT_SECRET);
-      res.json({ token, username: finalUser.username });
-    });
-  } catch (error) {
-    res.status(400).json({ error: "Invalid Google Token" });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
   }
 });
 
-// --- DATA ENDPOINTS ---
+// Google SSO — verify access token, upsert user, return JWT
+app.post('/api/google-auth', async (req, res) => {
+  const { access_token } = req.body;
+  if (!access_token) return res.status(400).json({ error: 'No access token provided.' });
 
-app.get('/api/open-plays', authenticateToken, (req, res) => {
-  db.all(`SELECT * FROM open_plays WHERE username = ? ORDER BY id ASC`, [req.user.username], (err, rows) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json(rows);
-  });
+  try {
+    // Fetch the authenticated user's profile from Google
+    const googleRes = await axios.get('https://www.googleapis.com/oauth2/v3/userinfo', {
+      headers: { Authorization: `Bearer ${access_token}` }
+    });
+    const { email, name, sub: googleId } = googleRes.data;
+
+    // Use part of email as default username (before @), de-conflict if needed
+    const baseUsername = email.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '_');
+
+    // Upsert: insert if new, otherwise fetch existing record
+    let userResult = await pool.query(`SELECT * FROM users WHERE email = $1`, [email]);
+
+    if (userResult.rows.length === 0) {
+      // New Google user — create them with a placeholder password hash
+      let username = baseUsername;
+      // Ensure username uniqueness
+      const existing = await pool.query(`SELECT id FROM users WHERE username = $1`, [username]);
+      if (existing.rows.length > 0) username = `${baseUsername}_${googleId.slice(-4)}`;
+
+      await pool.query(
+        `INSERT INTO users (email, username, password_hash) VALUES ($1, $2, $3)`,
+        [email, username, 'GOOGLE_SSO']
+      );
+      userResult = await pool.query(`SELECT * FROM users WHERE email = $1`, [email]);
+    }
+
+    const user = userResult.rows[0];
+    const token = jwt.sign({ username: user.username, email: user.email }, JWT_SECRET);
+    res.json({ token, username: user.username });
+  } catch (err) {
+    console.error('Google auth error:', err.message);
+    res.status(401).json({ error: 'Invalid or expired Google token.' });
+  }
 });
 
-app.post('/api/open-plays', authenticateToken, (req, res) => {
+// --- OPEN PLAY ENDPOINTS ---
+
+app.get('/api/open-plays', authenticateToken, async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT * FROM open_plays WHERE username = $1 ORDER BY id ASC`,
+      [req.user.username]
+    );
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/open-plays', authenticateToken, async (req, res) => {
   const { court_name, returning_players, new_players, court_fee_rev, misc_rev, base_cost, losses } = req.body;
-  db.run(`INSERT INTO open_plays (username, court_name, returning_players, new_players, court_fee_rev, misc_rev, base_cost, losses) 
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?)`, 
-    [req.user.username, court_name, returning_players, new_players, court_fee_rev, misc_rev, base_cost, losses], 
-    function(err) {
-      if (err) return res.status(500).json({ error: err.message });
-      res.json({ id: this.lastID, message: "Record saved!" });
-  });
+  try {
+    const result = await pool.query(
+      `INSERT INTO open_plays (username, court_name, returning_players, new_players, court_fee_rev, misc_rev, base_cost, losses)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id`,
+      [req.user.username, court_name, returning_players, new_players, court_fee_rev, misc_rev, base_cost, losses]
+    );
+    res.json({ id: result.rows[0].id, message: 'Record saved!' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-app.delete('/api/open-plays/:id', authenticateToken, (req, res) => {
-  db.run(`DELETE FROM open_plays WHERE id = ? AND username = ?`, [req.params.id, req.user.username], function(err) {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json({ message: "Record deleted!" });
-  });
+app.delete('/api/open-plays/:id', authenticateToken, async (req, res) => {
+  try {
+    await pool.query(
+      `DELETE FROM open_plays WHERE id = $1 AND username = $2`,
+      [req.params.id, req.user.username]
+    );
+    res.json({ message: 'Record deleted!' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-app.listen(5000, () => console.log('Server running on port 5000'));
+app.listen(5000, () => console.log('🚀 Server running on port 5000'));
