@@ -175,4 +175,8 @@ app.delete('/api/open-plays/:id', authenticateToken, async (req, res) => {
   }
 });
 
-app.listen(5000, () => console.log('🚀 Server running on port 5000'));
+if (require.main === module) {
+  app.listen(5000, () => console.log('🚀 Server running on port 5000'));
+}
+
+module.exports = app;
