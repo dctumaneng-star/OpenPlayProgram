@@ -104,6 +104,8 @@ app.post('/api/login', async (req, res) => {
 
 // Google SSO — verify access token, upsert user, return JWT
 app.post('/api/google-auth', async (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  
   const { access_token } = req.body;
   if (!access_token) return res.status(400).json({ error: 'No access token provided.' });
 
