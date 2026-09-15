@@ -105,8 +105,18 @@ app.post('/api/login', async (req, res) => {
 const { OAuth2Client } = require('google-auth-library');
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
+// Handle preflight requests explicitly for Vercel
+app.options('/api/google-auth', (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', 'https://openplay-web-daryl16.vercel.app');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.status(204).send();
+});
+
 // Google SSO — verify JWT credential from <GoogleLogin />, upsert user, return JWT
 app.post('/api/google-auth', async (req, res) => {
+  // Force CORS header on every response
+  res.setHeader('Access-Control-Allow-Origin', 'https://openplay-web-daryl16.vercel.app');
   res.setHeader('Content-Type', 'application/json');
   
   const { credential } = req.body;
