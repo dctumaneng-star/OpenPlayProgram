@@ -7,7 +7,11 @@ const jwt = require('jsonwebtoken');
 const axios = require('axios');
 
 const app = express();
-app.use(cors());
+// Enable CORS for your live frontend
+app.use(cors({
+  origin: ['https://openplay-web-daryl16.vercel.app', 'http://localhost:5173', 'http://localhost:5174'],
+  credentials: true
+}));
 app.use(express.json());
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your_super_secret_jwt_key';
