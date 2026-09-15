@@ -468,7 +468,7 @@ function App() {
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-            🏸 Open Play Finance Tracker
+            🏸 The Bottom Baseline
             <span className="ml-2 text-base font-normal text-gray-400 dark:text-gray-500">— {username}</span>
           </h1>
 
