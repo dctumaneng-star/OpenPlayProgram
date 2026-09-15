@@ -102,19 +102,24 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
-// Google SSO — verify access token, upsert user, return JWT
+const { OAuth2Client } = require('google-auth-library');
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+// Google SSO — verify JWT credential from <GoogleLogin />, upsert user, return JWT
 app.post('/api/google-auth', async (req, res) => {
   res.setHeader('Content-Type', 'application/json');
   
-  const { access_token } = req.body;
-  if (!access_token) return res.status(400).json({ error: 'No access token provided.' });
+  const { credential } = req.body;
+  if (!credential) return res.status(400).json({ error: 'No credential provided.' });
 
   try {
-    // Fetch the authenticated user's profile from Google
-    const googleRes = await axios.get('https://www.googleapis.com/oauth2/v3/userinfo', {
-      headers: { Authorization: `Bearer ${access_token}` }
+    // Verify the Google JWT credential
+    const ticket = await googleClient.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
     });
-    const { email, name, sub: googleId } = googleRes.data;
+    const payload = ticket.getPayload();
+    const { email, name, sub: googleId } = payload;
 
     // Use part of email as default username (before @), de-conflict if needed
     const baseUsername = email.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '_');
