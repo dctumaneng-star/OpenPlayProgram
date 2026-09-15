@@ -6,12 +6,16 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const axios = require('axios');
 
-const app = express();
-// Enable CORS for your live frontend
-app.use(cors({
+const corsOptions = {
   origin: ['https://openplay-web-daryl16.vercel.app', 'http://localhost:5173', 'http://localhost:5174'],
   credentials: true
-}));
+};
+
+// Enable CORS for your live frontend
+app.use(cors(corsOptions));
+// Explicitly handle preflight requests for all routes (Vercel Serverless requirement)
+app.options('*', cors(corsOptions));
+
 app.use(express.json());
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your_super_secret_jwt_key';
