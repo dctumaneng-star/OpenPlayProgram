@@ -15,7 +15,7 @@ const corsOptions = {
 // Enable CORS for your live frontend
 app.use(cors(corsOptions));
 // Explicitly handle preflight requests for all routes (Vercel Serverless requirement)
-app.options('*', cors(corsOptions));
+app.options('/*path', cors(corsOptions));
 
 app.use(express.json());
 
