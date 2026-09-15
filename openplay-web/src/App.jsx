@@ -289,17 +289,36 @@ function App() {
   // ─── Auth View ─────────────────────────────────────────────────────────
   if (!token) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex flex-col justify-center items-center p-4 transition-colors">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex justify-center items-center p-4 md:p-12 transition-colors">
         {/* Theme toggle top-right */}
         <button
           onClick={cycleTheme}
-          className="fixed top-4 right-4 p-2 rounded-full bg-white dark:bg-gray-800 shadow border border-gray-200 dark:border-gray-700 text-sm hover:scale-110 transition-transform"
+          className="fixed top-4 right-4 p-2 rounded-full bg-white dark:bg-gray-800 shadow border border-gray-200 dark:border-gray-700 text-sm hover:scale-110 transition-transform z-10"
           title={`Current: ${label} — click to change`}
         >
           {icon}
         </button>
 
-        <div className="max-w-md w-full bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-800 p-8 transition-colors">
+        <div className="max-w-6xl w-full flex flex-col lg:flex-row items-center justify-center gap-12 lg:gap-24">
+          
+          {/* Left Description Side */}
+          <div className="flex-1 text-center lg:text-left max-w-2xl">
+            <h1 className="text-4xl lg:text-6xl font-extrabold text-indigo-600 dark:text-indigo-400 mb-6 tracking-tight">
+              The Bottom Baseline
+            </h1>
+            <p className="text-lg text-gray-700 dark:text-gray-300 mb-6 leading-relaxed">
+              The Bottom Baseline is a web application custom-built to completely automate financial tracking and player management for court organizers. Designed to eliminate manual spreadsheet calculations, it is the perfect solution for streamlining weekly badminton sessions, pickleball meetups, and other open play events into a clean, mobile-friendly dashboard.
+            </p>
+            <p className="text-base text-gray-600 dark:text-gray-400 mb-8 leading-relaxed">
+              Feedback, bug reports, and collaboration ideas are welcome while the app is in the testing stage.
+            </p>
+            <div className="text-sm font-medium text-gray-500 dark:text-gray-500 bg-white/50 dark:bg-gray-900/50 inline-block px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-800">
+              Created by: <span className="text-gray-800 dark:text-gray-200 font-bold">poochie (Daryl Tumaneng)</span>
+            </div>
+          </div>
+
+          {/* Right Login Side */}
+          <div className="max-w-md w-full bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-800 p-8 transition-colors shrink-0">
           <h2 className="text-2xl font-bold text-center text-gray-800 dark:text-gray-100 mb-6">
             🏸 Open Play Finance Tracker
           </h2>
@@ -367,8 +386,9 @@ function App() {
           </form>
         </div>
       </div>
-    );
-  }
+    </div>
+  );
+}
 
   // ─── Dashboard View ────────────────────────────────────────────────────
   return (
