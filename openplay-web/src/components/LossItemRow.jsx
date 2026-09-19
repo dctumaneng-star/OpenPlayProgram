@@ -10,12 +10,10 @@ export default function LossItemRow({ item, onChange, onRemove, inputCls }) {
       />
       <input
         type="number"
-        min="0"
-        step="10"
         placeholder="₱"
         className={`${inputCls} w-20`}
         value={item.cost}
-        onChange={(e) => onChange({ ...item, cost: parseFloat(e.target.value) || 0 })}
+        onChange={(e) => onChange({ ...item, cost: e.target.value })}
       />
       <button
         type="button"

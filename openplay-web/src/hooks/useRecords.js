@@ -3,15 +3,15 @@ import axios from 'axios';
 import { API_URL } from '../api/config';
 import { n, calcRecord, buildCourtAnalytics } from '../utils/helpers';
 
-const newItem = (type) => ({ item_type: type, description: '', cost: 0 });
+const newItem = (type) => ({ item_type: type, description: '', cost: '' });
 
 export const EMPTY_FORM = {
   court_name: '',
-  returning_players: 0,
-  new_players: 0,
-  court_fee_rev: 0,
-  misc_rev: 0,
-  base_cost: 0,
+  returning_players: '',
+  new_players: '',
+  court_fee_rev: '',
+  misc_rev: '',
+  base_cost: '',
   procuredItems: [],
   incidentItems: [],
 };

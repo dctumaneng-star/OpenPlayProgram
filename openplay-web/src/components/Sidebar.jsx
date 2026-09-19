@@ -43,24 +43,20 @@ export default function Sidebar({
             <label className={LABEL_CLS}>Returning</label>
             <input
               type="number"
-              min="0"
+              placeholder="0"
               className={INPUT_CLS}
               value={entryForm.returning_players}
-              onChange={(e) =>
-                setEntryForm({ ...entryForm, returning_players: parseInt(e.target.value) || 0 })
-              }
+              onChange={(e) => setEntryForm({ ...entryForm, returning_players: e.target.value })}
             />
           </div>
           <div>
             <label className={LABEL_CLS}>New Players</label>
             <input
               type="number"
-              min="0"
+              placeholder="0"
               className={INPUT_CLS}
               value={entryForm.new_players}
-              onChange={(e) =>
-                setEntryForm({ ...entryForm, new_players: parseInt(e.target.value) || 0 })
-              }
+              onChange={(e) => setEntryForm({ ...entryForm, new_players: e.target.value })}
             />
           </div>
         </div>
@@ -71,26 +67,20 @@ export default function Sidebar({
           <label className={LABEL_CLS}>Court Fee Revenue (₱)</label>
           <input
             type="number"
-            min="0"
-            step="50"
+            placeholder="0"
             className={INPUT_CLS}
             value={entryForm.court_fee_rev}
-            onChange={(e) =>
-              setEntryForm({ ...entryForm, court_fee_rev: parseFloat(e.target.value) || 0 })
-            }
+            onChange={(e) => setEntryForm({ ...entryForm, court_fee_rev: e.target.value })}
           />
         </div>
         <div>
           <label className={LABEL_CLS}>Misc Revenue (₱)</label>
           <input
             type="number"
-            min="0"
-            step="10"
+            placeholder="0"
             className={INPUT_CLS}
             value={entryForm.misc_rev}
-            onChange={(e) =>
-              setEntryForm({ ...entryForm, misc_rev: parseFloat(e.target.value) || 0 })
-            }
+            onChange={(e) => setEntryForm({ ...entryForm, misc_rev: e.target.value })}
           />
         </div>
         <div className="flex justify-between text-xs px-1 text-emerald-600 dark:text-emerald-400 font-mono">
@@ -107,13 +97,10 @@ export default function Sidebar({
           </label>
           <input
             type="number"
-            min="0"
-            step="50"
+            placeholder="0"
             className={INPUT_CLS}
             value={entryForm.base_cost}
-            onChange={(e) =>
-              setEntryForm({ ...entryForm, base_cost: parseFloat(e.target.value) || 0 })
-            }
+            onChange={(e) => setEntryForm({ ...entryForm, base_cost: e.target.value })}
           />
         </div>
 
