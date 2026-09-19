@@ -3,18 +3,18 @@ export const n = (v) => parseFloat(v) || 0;
 
 // Shared Tailwind class strings used across multiple components
 export const INPUT_CLS =
-  'w-full px-3 py-2 text-sm rounded-lg border bg-white dark:bg-gray-700 ' +
-  'border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 ' +
-  'placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none ' +
-  'focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400';
+  'w-full px-3 py-2 text-sm rounded-lg border bg-white dark:bg-neutral-800 ' +
+  'border-neutral-300 dark:border-neutral-700 text-neutral-900 dark:text-neutral-100 ' +
+  'placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none ' +
+  'focus:ring-2 focus:ring-blue-700 dark:focus:ring-blue-600';
 
 export const LABEL_CLS =
-  'block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-1';
+  'block text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400 mb-1';
 
 export const SECTION_LBL_CLS =
-  'text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 mt-3 mb-1';
+  'text-xs font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mt-3 mb-1';
 
-export const PIE_COLORS = ['#6366f1', '#f59e0b'];
+export const PIE_COLORS = ['#1D4ED8', '#DFFF00'];
 
 // Derive all financial figures for a single record
 export const calcRecord = (r) => {

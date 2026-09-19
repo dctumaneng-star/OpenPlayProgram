@@ -18,8 +18,8 @@ export default function Sidebar({
   handleEntrySubmit,
 }) {
   return (
-    <aside className="w-80 bg-gray-50 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 h-full overflow-y-auto p-5 flex flex-col shrink-0">
-      <h3 className="font-bold text-base mb-4 text-gray-800 dark:text-gray-100">
+    <aside className="w-80 bg-neutral-50 dark:bg-neutral-900 border-r border-neutral-200 dark:border-neutral-800 h-full overflow-y-auto p-5 flex flex-col shrink-0">
+      <h3 className="font-bold text-base mb-4 text-neutral-800 dark:text-neutral-100">
         📝 New Open Play Record
       </h3>
 
@@ -93,7 +93,7 @@ export default function Sidebar({
         <div>
           <label className={LABEL_CLS}>
             Base Cost (₱){' '}
-            <span className="normal-case text-gray-400 font-normal">court rental, overhead</span>
+            <span className="normal-case text-neutral-400 font-normal">court rental, overhead</span>
           </label>
           <input
             type="number"
@@ -109,12 +109,12 @@ export default function Sidebar({
           <div className="flex items-center justify-between">
             <label className={LABEL_CLS}>
               Procured Items{' '}
-              <span className="normal-case text-gray-400 font-normal">shuttles, grips…</span>
+              <span className="normal-case text-neutral-400 font-normal">shuttles, grips…</span>
             </label>
             <button
               type="button"
               onClick={addProcured}
-              className="text-xs text-indigo-500 hover:text-indigo-700 font-semibold mb-1"
+              className="text-xs text-blue-700 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-semibold mb-1"
             >
               + Add
             </button>
@@ -142,7 +142,7 @@ export default function Sidebar({
           <div className="flex items-center justify-between">
             <label className={LABEL_CLS}>
               Incident Losses{' '}
-              <span className="normal-case text-gray-400 font-normal">broken equip, lost items</span>
+              <span className="normal-case text-neutral-400 font-normal">broken equip, lost items</span>
             </label>
             <button
               type="button"
@@ -180,7 +180,7 @@ export default function Sidebar({
         <div
           className={`text-sm text-center py-2 rounded-lg font-mono font-semibold ${
             formNetRev >= 0
-              ? 'bg-green-50 dark:bg-green-950 text-green-700 dark:text-green-300'
+              ? 'bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300'
               : 'bg-red-50 dark:bg-red-950 text-red-600 dark:text-red-400'
           }`}
         >
@@ -189,7 +189,7 @@ export default function Sidebar({
 
         <button
           type="submit"
-          className="mt-1 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+          className="mt-1 w-full bg-blue-700 hover:bg-blue-800 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
         >
           Add Record
         </button>

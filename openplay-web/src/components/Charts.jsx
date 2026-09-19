@@ -9,8 +9,8 @@ export default function Charts({ revenueChartData, playerChartData, playerPieDat
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
 
       {/* Revenue vs Cost stacked bar */}
-      <div className="lg:col-span-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 shadow-sm">
-        <h3 className="font-semibold text-sm text-gray-700 dark:text-gray-300 mb-4">
+      <div className="lg:col-span-2 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl p-5 shadow-sm">
+        <h3 className="font-semibold text-sm text-neutral-700 dark:text-neutral-300 mb-4">
           💰 Revenue vs. Cost per Session
         </h3>
         <ResponsiveContainer width="100%" height={220}>
@@ -28,18 +28,18 @@ export default function Charts({ revenueChartData, playerChartData, playerPieDat
               }}
             />
             <Legend wrapperStyle={{ fontSize: '12px' }} />
-            <Bar dataKey="Court Fee"  stackId="rev"  fill="#6366f1" />
-            <Bar dataKey="Misc Rev"   stackId="rev"  fill="#818cf8" radius={[4, 4, 0, 0]} />
-            <Bar dataKey="Base Cost"  stackId="cost" fill="#fbbf24" />
-            <Bar dataKey="Procured"   stackId="cost" fill="#fb923c" />
-            <Bar dataKey="Incidents"  stackId="cost" fill="#f87171" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="Court Fee"  stackId="rev"  fill="#1D4ED8" />
+            <Bar dataKey="Misc Rev"   stackId="rev"  fill="#065F46" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="Base Cost"  stackId="cost" fill="#171717" />
+            <Bar dataKey="Procured"   stackId="cost" fill="#DFFF00" />
+            <Bar dataKey="Incidents"  stackId="cost" fill="#ef4444" radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>
 
       {/* Player type pie */}
-      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 shadow-sm">
-        <h3 className="font-semibold text-sm text-gray-700 dark:text-gray-300 mb-4">
+      <div className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl p-5 shadow-sm">
+        <h3 className="font-semibold text-sm text-neutral-700 dark:text-neutral-300 mb-4">
           👥 Player Breakdown
         </h3>
         <ResponsiveContainer width="100%" height={220}>
@@ -65,8 +65,8 @@ export default function Charts({ revenueChartData, playerChartData, playerPieDat
       </div>
 
       {/* Players per session */}
-      <div className="lg:col-span-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 shadow-sm">
-        <h3 className="font-semibold text-sm text-gray-700 dark:text-gray-300 mb-4">
+      <div className="lg:col-span-3 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl p-5 shadow-sm">
+        <h3 className="font-semibold text-sm text-neutral-700 dark:text-neutral-300 mb-4">
           🏃 Players per Session
         </h3>
         <ResponsiveContainer width="100%" height={200}>
@@ -76,8 +76,8 @@ export default function Charts({ revenueChartData, playerChartData, playerPieDat
             <YAxis tick={{ fontSize: 11 }} />
             <Tooltip contentStyle={{ borderRadius: '8px', fontSize: '12px' }} />
             <Legend wrapperStyle={{ fontSize: '12px' }} />
-            <Bar dataKey="Returning" fill="#6366f1" radius={[4, 4, 0, 0]} />
-            <Bar dataKey="New"       fill="#f59e0b" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="Returning" fill="#1D4ED8" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="New"       fill="#DFFF00" radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>

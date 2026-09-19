@@ -6,12 +6,12 @@ export default function RecordsTable({ records, onDelete }) {
 
   return (
     <>
-      <h2 className="text-base font-semibold mb-3 text-gray-800 dark:text-gray-200 border-b border-gray-200 dark:border-gray-700 pb-2">
+      <h2 className="text-base font-semibold mb-3 text-neutral-800 dark:text-neutral-200 border-b border-neutral-200 dark:border-neutral-700 pb-2">
         📋 Records
       </h2>
-      <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
-        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-sm">
-          <thead className="bg-gray-50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400 text-xs font-semibold uppercase tracking-wider">
+      <div className="overflow-x-auto rounded-xl border border-neutral-200 dark:border-neutral-700 shadow-sm">
+        <table className="min-w-full divide-y divide-neutral-200 dark:divide-neutral-700 text-sm">
+          <thead className="bg-neutral-50 dark:bg-neutral-800/50 text-neutral-500 dark:text-neutral-400 text-xs font-semibold uppercase tracking-wider">
             <tr>
               <th className="px-4 py-3 text-left">ID</th>
               <th className="px-4 py-3 text-left">Session</th>
@@ -24,7 +24,7 @@ export default function RecordsTable({ records, onDelete }) {
               <th className="px-4 py-3 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-100 dark:divide-gray-800">
+          <tbody className="bg-white dark:bg-neutral-900 divide-y divide-neutral-100 dark:divide-neutral-800">
             {records.map((r) => {
               const { grossRev, totalCost, netRev, totalPlayers } = calcRecord(r);
               const isExpanded = expandedRow === r.id;
@@ -34,27 +34,27 @@ export default function RecordsTable({ records, onDelete }) {
                 <>
                   <tr
                     key={r.id}
-                    className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                    className="hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors"
                   >
-                    <td className="px-4 py-3 text-gray-400 dark:text-gray-500 font-mono">{r.id}</td>
-                    <td className="px-4 py-3 font-medium text-gray-900 dark:text-gray-100">
+                    <td className="px-4 py-3 text-neutral-400 dark:text-neutral-500 font-mono">{r.id}</td>
+                    <td className="px-4 py-3 font-medium text-neutral-900 dark:text-neutral-100">
                       {r.court_name}
                       {hasItems && (
                         <button
                           onClick={() => setExpandedRow(isExpanded ? null : r.id)}
-                          className="ml-2 text-xs text-indigo-400 hover:text-indigo-600"
+                          className="ml-2 text-xs text-blue-400 hover:text-blue-600"
                         >
                           {isExpanded ? '▲ hide' : '▼ items'}
                         </button>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-right text-gray-500 dark:text-gray-400">
+                    <td className="px-4 py-3 text-right text-neutral-500 dark:text-neutral-400">
                       {r.returning_players}
                     </td>
-                    <td className="px-4 py-3 text-right text-gray-500 dark:text-gray-400">
+                    <td className="px-4 py-3 text-right text-neutral-500 dark:text-neutral-400">
                       {r.new_players}
                     </td>
-                    <td className="px-4 py-3 text-right font-medium text-gray-700 dark:text-gray-300">
+                    <td className="px-4 py-3 text-right font-medium text-neutral-700 dark:text-neutral-300">
                       {totalPlayers}
                     </td>
                     <td className="px-4 py-3 text-right text-emerald-600 dark:text-emerald-400">
@@ -85,7 +85,7 @@ export default function RecordsTable({ records, onDelete }) {
 
                   {/* Expandable loss items row */}
                   {isExpanded && hasItems && (
-                    <tr key={`${r.id}-items`} className="bg-gray-50 dark:bg-gray-800/30">
+                    <tr key={`${r.id}-items`} className="bg-neutral-50 dark:bg-neutral-800/30">
                       <td colSpan={9} className="px-6 py-3">
                         <div className="grid grid-cols-2 gap-4 text-xs">
                           {r.loss_items.filter((i) => i.item_type === 'procured').length > 0 && (
@@ -98,7 +98,7 @@ export default function RecordsTable({ records, onDelete }) {
                                 .map((i) => (
                                   <div
                                     key={i.id}
-                                    className="flex justify-between text-gray-600 dark:text-gray-400"
+                                    className="flex justify-between text-neutral-600 dark:text-neutral-400"
                                   >
                                     <span>{i.description}</span>
                                     <span>₱{n(i.cost).toLocaleString()}</span>
@@ -116,7 +116,7 @@ export default function RecordsTable({ records, onDelete }) {
                                 .map((i) => (
                                   <div
                                     key={i.id}
-                                    className="flex justify-between text-gray-600 dark:text-gray-400"
+                                    className="flex justify-between text-neutral-600 dark:text-neutral-400"
                                   >
                                     <span>{i.description}</span>
                                     <span>₱{n(i.cost).toLocaleString()}</span>
