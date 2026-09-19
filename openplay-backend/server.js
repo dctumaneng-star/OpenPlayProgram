@@ -10,30 +10,26 @@ const axios = require('axios');
 const corsOptions = {
   origin: [
     'https://thebottombaseline.vercel.app',
-    'https://opfintracker.vercel.app', 
-    'https://openplay-web-daryl16.vercel.app', 
-    'http://localhost:5173', 
+    'https://opfintracker.vercel.app',
+    'https://openplay-web-daryl16.vercel.app',
+    'http://localhost:5173',
     'http://localhost:5174'
   ],
   credentials: true
 };
 
-// Enable CORS for your live frontend
 app.use(cors(corsOptions));
-// Explicitly handle preflight requests for all routes (Vercel Serverless requirement)
 app.options('/*path', cors(corsOptions));
-
 app.use(express.json());
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your_super_secret_jwt_key';
 
-// Connect to Neon PostgreSQL using the URL from your .env file
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false }
 });
 
-// Initialize Database Tables in the Cloud
+// ── Initialize / migrate DB tables ────────────────────────────────────────────
 const initDb = async () => {
   try {
     await pool.query(`
@@ -44,19 +40,44 @@ const initDb = async () => {
         password_hash TEXT NOT NULL
       );
     `);
+
+    // Main open_plays table
     await pool.query(`
       CREATE TABLE IF NOT EXISTS open_plays (
         id SERIAL PRIMARY KEY,
         username VARCHAR(100),
         court_name VARCHAR(100),
-        returning_players INTEGER,
-        new_players INTEGER,
-        court_fee_rev NUMERIC,
-        misc_rev NUMERIC,
-        base_cost NUMERIC,
-        losses NUMERIC
+        returning_players INTEGER DEFAULT 0,
+        new_players INTEGER DEFAULT 0,
+        court_fee_rev NUMERIC(12,2) DEFAULT 0,
+        misc_rev NUMERIC(12,2) DEFAULT 0,
+        base_cost NUMERIC(12,2) DEFAULT 0,
+        procured_costs NUMERIC(12,2) DEFAULT 0,
+        losses NUMERIC(12,2) DEFAULT 0,
+        created_at TIMESTAMPTZ DEFAULT NOW()
       );
     `);
+
+    // Migration: add columns that may not exist on older DB instances
+    const migrations = [
+      `ALTER TABLE open_plays ADD COLUMN IF NOT EXISTS procured_costs NUMERIC(12,2) DEFAULT 0`,
+      `ALTER TABLE open_plays ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT NOW()`,
+    ];
+    for (const sql of migrations) {
+      await pool.query(sql);
+    }
+
+    // Loss items table — each row is one line item attached to an open play
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS loss_items (
+        id SERIAL PRIMARY KEY,
+        open_play_id INTEGER REFERENCES open_plays(id) ON DELETE CASCADE,
+        item_type VARCHAR(20) CHECK (item_type IN ('procured', 'incident')),
+        description TEXT,
+        cost NUMERIC(12,2) DEFAULT 0
+      );
+    `);
+
     console.log('✅ Connected to Neon PostgreSQL successfully.');
   } catch (err) {
     console.error('❌ Database connection error:', err.message);
@@ -64,7 +85,7 @@ const initDb = async () => {
 };
 initDb();
 
-// --- HELPER ---
+// ── Auth helper ───────────────────────────────────────────────────────────────
 const authenticateToken = (req, res, next) => {
   const token = req.headers['authorization']?.split(' ')[1];
   if (!token) return res.sendStatus(401);
@@ -75,8 +96,7 @@ const authenticateToken = (req, res, next) => {
   });
 };
 
-// --- AUTH ENDPOINTS ---
-
+// ── Auth endpoints ────────────────────────────────────────────────────────────
 app.post('/api/signup', async (req, res) => {
   const { email, username, password } = req.body;
   try {
@@ -112,38 +132,27 @@ app.post('/api/login', async (req, res) => {
 const { OAuth2Client } = require('google-auth-library');
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
-// Handle preflight requests explicitly for Vercel
 app.options('/api/google-auth', cors(corsOptions));
 
-// Google SSO — verify JWT credential from <GoogleLogin />, upsert user, return JWT
 app.post('/api/google-auth', async (req, res) => {
   res.setHeader('Content-Type', 'application/json');
-  
   const { credential } = req.body;
   if (!credential) return res.status(400).json({ error: 'No credential provided.' });
 
   try {
-    // Verify the Google JWT credential
     const ticket = await googleClient.verifyIdToken({
       idToken: credential,
       audience: process.env.GOOGLE_CLIENT_ID,
     });
     const payload = ticket.getPayload();
     const { email, name, sub: googleId } = payload;
-
-    // Use part of email as default username (before @), de-conflict if needed
     const baseUsername = email.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '_');
 
-    // Upsert: insert if new, otherwise fetch existing record
     let userResult = await pool.query(`SELECT * FROM users WHERE email = $1`, [email]);
-
     if (userResult.rows.length === 0) {
-      // New Google user — create them with a placeholder password hash
       let username = baseUsername;
-      // Ensure username uniqueness
       const existing = await pool.query(`SELECT id FROM users WHERE username = $1`, [username]);
       if (existing.rows.length > 0) username = `${baseUsername}_${googleId.slice(-4)}`;
-
       await pool.query(
         `INSERT INTO users (email, username, password_hash) VALUES ($1, $2, $3)`,
         [email, username, 'GOOGLE_SSO']
@@ -160,34 +169,81 @@ app.post('/api/google-auth', async (req, res) => {
   }
 });
 
-// --- OPEN PLAY ENDPOINTS ---
+// ── Open Play endpoints ───────────────────────────────────────────────────────
 
+// GET all records for authenticated user, including loss item lists
 app.get('/api/open-plays', authenticateToken, async (req, res) => {
   try {
     const result = await pool.query(
       `SELECT * FROM open_plays WHERE username = $1 ORDER BY id ASC`,
       [req.user.username]
     );
-    res.json(result.rows);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
 
-app.post('/api/open-plays', authenticateToken, async (req, res) => {
-  const { court_name, returning_players, new_players, court_fee_rev, misc_rev, base_cost, losses } = req.body;
-  try {
-    const result = await pool.query(
-      `INSERT INTO open_plays (username, court_name, returning_players, new_players, court_fee_rev, misc_rev, base_cost, losses)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id`,
-      [req.user.username, court_name, returning_players, new_players, court_fee_rev, misc_rev, base_cost, losses]
+    // Attach loss items to each record
+    const records = await Promise.all(
+      result.rows.map(async (row) => {
+        const items = await pool.query(
+          `SELECT * FROM loss_items WHERE open_play_id = $1 ORDER BY id ASC`,
+          [row.id]
+        );
+        return { ...row, loss_items: items.rows };
+      })
     );
-    res.json({ id: result.rows[0].id, message: 'Record saved!' });
+
+    res.json(records);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
+// POST a new open play record + its loss items in one request
+// Body: { court_name, returning_players, new_players, court_fee_rev, misc_rev,
+//         base_cost, procured_costs, losses, loss_items: [{item_type, description, cost}] }
+app.post('/api/open-plays', authenticateToken, async (req, res) => {
+  const {
+    court_name, returning_players, new_players,
+    court_fee_rev, misc_rev, base_cost,
+    procured_costs, losses, loss_items = []
+  } = req.body;
+
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    const result = await client.query(
+      `INSERT INTO open_plays
+         (username, court_name, returning_players, new_players,
+          court_fee_rev, misc_rev, base_cost, procured_costs, losses)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id`,
+      [
+        req.user.username, court_name,
+        returning_players || 0, new_players || 0,
+        court_fee_rev || 0, misc_rev || 0,
+        base_cost || 0, procured_costs || 0, losses || 0
+      ]
+    );
+    const openPlayId = result.rows[0].id;
+
+    // Insert each loss item
+    for (const item of loss_items) {
+      await client.query(
+        `INSERT INTO loss_items (open_play_id, item_type, description, cost)
+         VALUES ($1, $2, $3, $4)`,
+        [openPlayId, item.item_type, item.description, item.cost || 0]
+      );
+    }
+
+    await client.query('COMMIT');
+    res.json({ id: openPlayId, message: 'Record saved!' });
+  } catch (err) {
+    await client.query('ROLLBACK');
+    res.status(500).json({ error: err.message });
+  } finally {
+    client.release();
+  }
+});
+
+// DELETE a record (loss_items cascade automatically)
 app.delete('/api/open-plays/:id', authenticateToken, async (req, res) => {
   try {
     await pool.query(
