@@ -144,3 +144,4 @@ export default function AuthView({ theme, icon, cycleTheme, label, onLogin, onSi
     </div>
   );
 }
+

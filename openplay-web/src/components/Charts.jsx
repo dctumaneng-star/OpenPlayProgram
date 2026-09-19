@@ -85,3 +85,4 @@ export default function Charts({ revenueChartData, playerChartData, playerPieDat
     </div>
   );
 }
+

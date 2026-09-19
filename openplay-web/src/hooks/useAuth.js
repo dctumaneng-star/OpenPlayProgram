@@ -36,3 +36,4 @@ export function useAuth() {
 
   return { token, username, handleLogin, handleSignup, handleGoogleAuth, handleLogout };
 }
+

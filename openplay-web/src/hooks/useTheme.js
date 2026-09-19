@@ -31,3 +31,4 @@ export function useTheme() {
 
   return { theme, cycleTheme, icon, label };
 }
+

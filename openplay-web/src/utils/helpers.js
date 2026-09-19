@@ -39,3 +39,4 @@ export const buildCourtAnalytics = (records) => {
   });
   return Object.values(courtMap);
 };
+

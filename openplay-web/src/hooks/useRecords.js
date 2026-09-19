@@ -196,3 +196,4 @@ export function useRecords(token) {
     topParticipants,
   };
 }
+

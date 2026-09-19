@@ -91,3 +91,4 @@ export default function CourtAnalytics({ courtAnalytics, topProfit, topParticipa
     </div>
   );
 }
+

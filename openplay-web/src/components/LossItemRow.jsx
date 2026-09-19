@@ -27,3 +27,4 @@ export default function LossItemRow({ item, onChange, onRemove, inputCls }) {
     </div>
   );
 }
+
